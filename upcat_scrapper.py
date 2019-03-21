@@ -95,7 +95,23 @@ def _write_sql(passers):
 
     # Insert the passers. Note that passers with a pending case will
     # be given a null value for their campus and course.
+    for passer in passers:
+        course = passer['course']
+        campus = passer['campus']
 
+        name = passer['name']
+        course_id = courses[course] if course != '**Pending Case' else 'NULL'
+        campus_id = campuses[campus] if campus != '' else 'NULL'
+
+        # We are not escaping course_id and campus_id since they're integers.
+        # They are also still not escaped if they are NULLs since we already
+        # know that the values are safe.
+        query = 'INSERT INTO passers(name, course_id, campus_id) '
+        query += 'VALUES (\'{}\', {}, {})'.format(_escape_string(name),
+                                                  course_id,
+                                                  campus_id)
+
+        queries.append(query)
 
     # Just adding a bit of a new line at the end of the file as per
     # the UNIX convention.
@@ -154,7 +170,7 @@ def _escape_string(value):
     # This function is based on the string escape function, escape_string(),
     # of PyMySQL. The function's code can be found in:
     # - https://github.com/PyMySQL/PyMySQL/blob/master/pymysql/converters.py
-    _escape_table = [unichr(x) for x in range(128)]
+    _escape_table = [chr(x) for x in range(128)]
     _escape_table[0] = u'\\0'
     _escape_table[ord('\\')] = u'\\\\'
     _escape_table[ord('\n')] = u'\\n'
@@ -180,10 +196,12 @@ if __name__ == '__main__':
 
     output_type = sys.argv[1]
 
-    print('Scraping records from the UPCAT results...', end=' ', flush=True)
+    scraping_message = 'Scraping records from the UPCAT results site '
+    scraping_message += '(Stickbread mirror)...'
+    print(scraping_message, end='', flush=True)
     passers = _scrape_results('http://upcat.stickbread.net', 1, 259)
 
-    print('Done!')
+    print(' Done!')
     
     if output_type == 'json':
         _write_json(passers)
