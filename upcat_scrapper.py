@@ -8,14 +8,14 @@ from bs4 import BeautifulSoup
 
 def _scrape_page(page_url):
     page = requests.get(page_url)
-    soup = BeautifulSoup(page.text, 'html.parser')
+    soup = BeautifulSoup(page.text, 'html5lib')
 
-    passers = list()
     html_passers_table = soup.find_all('table')[2:3]
     html_passers_tbody = html_passers_table[0].find_all('tbody')[0]
     html_passers_row = html_passers_tbody.find_all('tr')
 
     num_passers = len(html_passers_row)
+    passers = list()
     for index in range(num_passers):
         record = html_passers_row[index]
         
@@ -33,9 +33,18 @@ def _scrape_page(page_url):
     return passers
 
 
-def _scrape_results(root_url, start, end):
+def _scrape_results(root_url):
+    # We first need to get the number of 
+    page = requests.get(root_url)
+    soup = BeautifulSoup(page.text, 'html.parser')
+
+    # Websites should really use IDs in their HTML elements.
+    html_passers_groups_table = soup.find_all('table')[1]
+    html_passers_groups_tbody = html_passers_groups_table.find_all('tbody')[0]
+    num_passers_groups = len(html_passers_groups_tbody.find_all('tr'))
+
     passers = list()
-    for page_count in range(start, end + 1):
+    for page_count in range(1, num_passers_groups):
         url = '{}/page-{}.html'.format(root_url, str(page_count).zfill(3))
         passers_subset = _scrape_page(url)
         passers.extend(passers_subset)
@@ -199,7 +208,7 @@ if __name__ == '__main__':
     scraping_message = 'Scraping records from the UPCAT results site '
     scraping_message += '(Stickbread mirror)...'
     print(scraping_message, end='', flush=True)
-    passers = _scrape_results('http://upcat.stickbread.net', 1, 259)
+    passers = _scrape_results('http://upcat.stickbread.net')
 
     print(' Done!')
     
