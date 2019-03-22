@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 
 def _scrape_page(page_url):
     page = requests.get(page_url)
-    soup = BeautifulSoup(page.text, 'html5lib')
+    soup = BeautifulSoup(page.text, 'html.parser')
 
     html_passers_table = soup.find_all('table')[2:3]
     html_passers_tbody = html_passers_table[0].find_all('tbody')[0]
@@ -36,7 +36,7 @@ def _scrape_page(page_url):
 def _scrape_results(root_url):
     # We first need to get the number of 
     page = requests.get(root_url)
-    soup = BeautifulSoup(page.text, 'html.parser')
+    soup = BeautifulSoup(page.text, 'html5lib')
 
     # Websites should really use IDs in their HTML elements.
     html_passers_groups_table = soup.find_all('table')[1]
@@ -44,7 +44,9 @@ def _scrape_results(root_url):
     num_passers_groups = len(html_passers_groups_tbody.find_all('tr'))
 
     passers = list()
-    for page_count in range(1, num_passers_groups):
+    for page_count in range(1, num_passers_groups + 1):
+        print('Scraping page #{}...'.format(page_count))
+
         url = '{}/page-{}.html'.format(root_url, str(page_count).zfill(3))
         passers_subset = _scrape_page(url)
         passers.extend(passers_subset)
@@ -205,12 +207,11 @@ if __name__ == '__main__':
 
     output_type = sys.argv[1]
 
-    scraping_message = 'Scraping records from the UPCAT results site '
-    scraping_message += '(Stickbread mirror)...'
-    print(scraping_message, end='', flush=True)
+    print('Scraping records from the UPCAT results'
+          + ' site (Stickbread mirror)...')
     passers = _scrape_results('http://upcat.stickbread.net')
 
-    print(' Done!')
+    print('Done!')
     
     if output_type == 'json':
         _write_json(passers)
