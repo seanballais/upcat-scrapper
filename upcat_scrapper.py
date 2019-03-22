@@ -33,8 +33,10 @@ def _scrape_page(page_url):
     return passers
 
 
-def _scrape_results(root_url):
-    # We first need to get the number of 
+def _scrape_results():
+    root_url = 'https://upcat.up.edu.ph/results/'
+
+    # We first need to get the number of pages that are in the results site.
     page = requests.get(root_url)
     soup = BeautifulSoup(page.text, 'html5lib')
 
@@ -207,9 +209,8 @@ if __name__ == '__main__':
 
     output_type = sys.argv[1]
 
-    print('Scraping records from the UPCAT results'
-          + ' site (Stickbread mirror)...')
-    passers = _scrape_results('http://upcat.stickbread.net')
+    print('Scraping records from the UPCAT results site...')
+    passers = _scrape_results()
 
     print('Done!')
     
