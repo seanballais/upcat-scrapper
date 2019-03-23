@@ -78,10 +78,8 @@ def _write_sql(passers):
     queries.append('CREATE TABLE passers IF NOT EXISTS ('
                    + 'id SERIAL PRIMARY KEY, '
                    + 'name TEXT NOT NULL, '
-                   + 'course_id INTEGER REFERENCES courses(id) '
-                   +           'ON DELETE SET NULL, '
+                   + 'course_id INTEGER REFERENCES courses(id), '
                    + 'campus_id INTEGER REFERENCES campuses(id)'
-                   +           'ON DELETE SET NULL'
                    + ');')
 
     _insert_newline_separator(queries)
